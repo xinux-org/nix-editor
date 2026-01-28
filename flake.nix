@@ -6,15 +6,18 @@
     utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, utils, ... }:
-    utils.lib.eachDefaultSystem (system:
-      let
+  outputs = {
+    self,
+    nixpkgs,
+    utils,
+    ...
+  }:
+    utils.lib.eachDefaultSystem (system: let
         pkgs = nixpkgs.legacyPackages.${system};
         name = "nix-editor";
-      in
-      rec
+      in rec
       {
-        packages.${name} = pkgs.callPackage ./default.nix { };
+        packages.${name} = pkgs.callPackage ./default.nix {};
 
         # `nix build`
         defaultPackage = packages.${name}; # legacy
@@ -32,13 +35,19 @@
 
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
+            nixd
+            deadnix
+            cargo
+            clippy
             rust-analyzer
             rustc
             rustfmt
-            cargo
-            cargo-tarpaulin
-            clippy
+            rustPlatform.bindgenHook
           ];
+
+          # Set Environment Variables
+          RUST_BACKTRACE = "full";
+          RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
         };
       });
 }
