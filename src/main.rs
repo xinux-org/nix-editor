@@ -1,7 +1,7 @@
 use clap::{self, ArgGroup, Parser};
-use nix_editor::{write::addtoarr, write::deref, write::write};
+use nix_editor::{write, write::addtoarr, write::write};
 use owo_colors::*;
-use std::{fs, io::Write};
+use std::{ fs, io::Write};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -136,7 +136,7 @@ fn printerror(msg: &str) {
 
 fn main() {
     let args = Args::parse();
-    let output;
+    let out;
     let f = match fs::read_to_string(&args.file) {
         Ok(x) => x,
         Err(_) => {
@@ -144,64 +144,83 @@ fn main() {
             std::process::exit(1);
         }
     };
-    if args.arr.is_some() {
-        output = match addtoarr(&f, &args.attribute, vec![args.arr.unwrap()]) {
-            Ok(x) => x,
-            Err(e) => {
-                writeerr(e, &args.file, &args.attribute);
-                std::process::exit(1)
+
+    match args {
+        Args { arr, attribute, ref file, .. } if arr.is_some() => {
+            out = match addtoarr(&f, &attribute, vec![arr.unwrap()]) {
+                Ok(x) => x,
+                Err(e) => {
+                    writeerr(e, &file, &attribute);
+                    std::process::exit(1)
+                }
             }
-        };
-    } else if args.val.is_some() {
-        output = match write(&f, &args.attribute, &args.val.unwrap()) {
-            Ok(x) => x,
-            Err(e) => {
-                writeerr(e, &args.file, &args.attribute);
-                std::process::exit(1)
-            }
-        };
-    } else if args.deref {
-        output = match deref(&f, &args.attribute) {
-            Ok(x) => x,
-            Err(e) => {
-                writeerr(e, &args.file, &args.attribute);
-                std::process::exit(1)
-            }
-        };
-    } else {
-        output = match printread(&f, &args.attribute) {
-            Ok(x) => x,
-            Err(e) => {
-                readerr(e, &args.file, &args.attribute);
-                std::process::exit(1)
-            }
-        };
+        }
+
+        Args { val, attribute, ref file, .. } if val.is_some() => {
+            out = match write(&f, &attribute, &val.unwrap()) {
+                Ok(x) => x,
+                Err(e) => {
+                    writeerr(e, &file, &attribute);
+                    std::process::exit(1)
+                }
+            };
+        }
+
+        Args { deref, attribute, ref file, .. } if deref => {
+            out = match write::deref(&f, &attribute) {
+                Ok(x) => x,
+                Err(e) => {
+                    writeerr(e, &file, &attribute);
+                    std::process::exit(1)
+                }
+            };
+        }
+        _ => {
+            out = match printread(&f, &args.attribute) {
+                Ok(x) => x,
+                Err(e) => {
+                    readerr(e, &args.file, &args.attribute);
+                    std::process::exit(1)
+                }
+            };
+        }
     }
 
-    if args.inplace {
-        writetofile(&args.file, &output, args.format);
-    } else if args.output.is_some() {
-        writetofile(&args.output.unwrap(), &output, args.format);
-    } else if args.raw {
-        print!(
-            "{}",
-            if args.format {
-                nixpkgs_fmt::reformat_string(&output)
-            } else {
-                output
-            }
-        );
-        if let Err(e) = std::io::stdout().flush() {
-            panic!("{}", e);
+    match args {
+        Args {
+            inplace,
+            file,
+            format,
+            ..
+        } if inplace => writetofile(&file, &out, format),
+
+        Args { output, format, .. } if output.is_some() => {
+            writetofile(&output.unwrap(), &out, format)
         }
-    } else {
-        println!(
-            "{}",
-            if args.format {
-                nixpkgs_fmt::reformat_string(&output).trim().to_string()
-            } else {
-                output.trim().to_string()
+
+        Args { raw, format, .. } if raw => {
+            print!(
+                "{}",
+                if format {
+                    nixpkgs_fmt::reformat_string(&out)
+                } else {
+                    out
+                }
+            );
+            if let Err(e) = std::io::stdout().flush() {
+                panic!("{}", e);
             }
-        );
+        }
+
+        _ => {
+            println!(
+                "{}",
+                if args.format {
+                    nixpkgs_fmt::reformat_string(&out).trim().to_string()
+                } else {
+                    out.trim().to_string()
+                }
+            );
+        }
     }
 }

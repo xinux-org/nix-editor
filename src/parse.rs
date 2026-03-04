@@ -67,7 +67,10 @@ pub fn findattr(configbase: &SyntaxNode, name: &str) -> Option<SyntaxNode> {
     } else {
         let s;
         if childvec.len() == 1 {
-            s = format!("{{{} = {{ {} = {}; }}; }}", name, childvec[0].0, childvec[0].1);
+            s = format!(
+                "{{{} = {{ {} = {}; }}; }}",
+                name, childvec[0].0, childvec[0].1
+            );
         } else {
             let mut list = String::new();
             for (k, v) in childvec.iter() {
@@ -103,8 +106,7 @@ pub fn get_collection(f: String) -> Result<HashMap<String, String>, ReadError> {
     Ok(map)
 }
 
-pub fn collectattrs(configbase: &SyntaxNode, map: &mut HashMap<String, String>)
-{
+pub fn collectattrs(configbase: &SyntaxNode, map: &mut HashMap<String, String>) {
     for child in configbase.children() {
         if child.kind() == SyntaxKind::NODE_ATTRPATH_VALUE {
             let children = child.children().collect::<Vec<SyntaxNode>>();

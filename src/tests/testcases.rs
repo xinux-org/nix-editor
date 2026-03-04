@@ -1,9 +1,10 @@
 use crate::{
-    read::{getarrvals, readvalue, ReadError, getwithvalue},
-    write::{ addtoarr, deref, write, rmarr }, parse::{collectattrs, getcfgbase, get_collection},
+    parse::{collectattrs, get_collection, getcfgbase},
+    read::{ReadError, getarrvals, getwithvalue, readvalue},
+    write::{addtoarr, deref, rmarr, write},
 };
 use core::panic;
-use std::{fs, path::Path, collections::HashMap};
+use std::{collections::HashMap, fs, path::Path};
 
 #[test]
 fn read_val1() {
@@ -65,7 +66,10 @@ fn read_val4() {
     };
 
     // Check if read value is correct
-    assert_eq!(out, "{\n  systemd-boot.enable = true;\n  efi.canTouchEfiVariables = true;\n}")
+    assert_eq!(
+        out,
+        "{\n  systemd-boot.enable = true;\n  efi.canTouchEfiVariables = true;\n}"
+    )
 }
 
 #[test]
@@ -267,7 +271,10 @@ fn write_val6() {
 
     // Check if read value is false
     assert_eq!(r, "{\n  y = false;\n  z = \"test\";\n}");
-    assert_eq!(out.trim(), "{\n  a = {\n    b = true;\n  };\n  a.c = {\n    d = \"test\";\n  };\n  x = { y = false; z = \"test\"; };\n}")
+    assert_eq!(
+        out.trim(),
+        "{\n  a = {\n    b = true;\n  };\n  a.c = {\n    d = \"test\";\n  };\n  x = { y = false; z = \"test\"; };\n}"
+    )
 }
 
 #[test]
@@ -469,18 +476,30 @@ fn read_collect() {
         fs::read_to_string(Path::new("src/tests/configuration.nix")).expect("Failed to read file");
 
     // Write value to file that does not yet exist
-    let mut map  = HashMap::new();
+    let mut map = HashMap::new();
     let configbase = getcfgbase(&rnix::Root::parse(&config).syntax()).unwrap();
     collectattrs(&configbase, &mut map);
 
     assert_eq!(map.len(), 12);
-    assert_eq!(map.get("imports").unwrap(), "[ # Include the results of the hardware scan.\n      ./hardware-configuration.nix\n    ]");
+    assert_eq!(
+        map.get("imports").unwrap(),
+        "[ # Include the results of the hardware scan.\n      ./hardware-configuration.nix\n    ]"
+    );
     assert_eq!(map.get("boot.loader.systemd-boot.enable").unwrap(), "true");
-    assert_eq!(map.get("boot.loader.efi.canTouchEfiVariables").unwrap(), "true");
+    assert_eq!(
+        map.get("boot.loader.efi.canTouchEfiVariables").unwrap(),
+        "true"
+    );
     assert_eq!(map.get("programs.gnupg.agent.enable").unwrap(), "true");
-    assert_eq!(map.get("programs.gnupg.agent.enableSSHSupport").unwrap(), "true");
+    assert_eq!(
+        map.get("programs.gnupg.agent.enableSSHSupport").unwrap(),
+        "true"
+    );
     assert_eq!(map.get("system.stateVersion").unwrap(), "\"22.05\"");
-    assert_eq!(map.get("users.users.\"jane\".isNormalUser").unwrap(), "true");
+    assert_eq!(
+        map.get("users.users.\"jane\".isNormalUser").unwrap(),
+        "true"
+    );
 }
 
 #[test]
@@ -489,16 +508,25 @@ fn main_test() {
         fs::read_to_string(Path::new("src/tests/configuration.nix")).expect("Failed to read file");
 
     // Write value to file that does not yet exist
-    let mut map  = HashMap::new();
+    let mut map = HashMap::new();
     let configbase = getcfgbase(&rnix::Root::parse(&config).syntax()).unwrap();
     collectattrs(&configbase, &mut map);
 
     assert_eq!(map.len(), 12);
-    assert_eq!(map.get("imports").unwrap(), "[ # Include the results of the hardware scan.\n      ./hardware-configuration.nix\n    ]");
+    assert_eq!(
+        map.get("imports").unwrap(),
+        "[ # Include the results of the hardware scan.\n      ./hardware-configuration.nix\n    ]"
+    );
     assert_eq!(map.get("boot.loader.systemd-boot.enable").unwrap(), "true");
-    assert_eq!(map.get("boot.loader.efi.canTouchEfiVariables").unwrap(), "true");
+    assert_eq!(
+        map.get("boot.loader.efi.canTouchEfiVariables").unwrap(),
+        "true"
+    );
     assert_eq!(map.get("programs.gnupg.agent.enable").unwrap(), "true");
-    assert_eq!(map.get("programs.gnupg.agent.enableSSHSupport").unwrap(), "true");
+    assert_eq!(
+        map.get("programs.gnupg.agent.enableSSHSupport").unwrap(),
+        "true"
+    );
     assert_eq!(map.get("system.stateVersion").unwrap(), "\"22.05\"");
 }
 
@@ -529,16 +557,25 @@ fn collect2() {
     };
 
     // Check if read values are correct
-    assert_eq!(out.get("boot.loader.efi.canTouchEfiVariables"), Some(&String::from("true")));
-    assert_eq!(out.get("programs.gnupg.agent.enableSSHSupport"), Some(&String::from("true")));
-    assert_eq!(out.get("system.stateVersion"), Some(&String::from("\"22.05\"")));
+    assert_eq!(
+        out.get("boot.loader.efi.canTouchEfiVariables"),
+        Some(&String::from("true"))
+    );
+    assert_eq!(
+        out.get("programs.gnupg.agent.enableSSHSupport"),
+        Some(&String::from("true"))
+    );
+    assert_eq!(
+        out.get("system.stateVersion"),
+        Some(&String::from("\"22.05\""))
+    );
 }
 
 #[test]
 fn write_val_internal1() {
     let config =
         fs::read_to_string(Path::new("src/tests/format3.nix")).expect("Failed to read file");
-    
+
     // Write value to file that does not yet exist
     let out = match write(&config, "a.c.b", "true") {
         Ok(s) => s,
@@ -546,5 +583,8 @@ fn write_val_internal1() {
     };
 
     // Check if read value is correct
-    assert_eq!(out.trim(), "{\n  a = {\n    b = true;\n    c.b = true;\n  };\n}");
+    assert_eq!(
+        out.trim(),
+        "{\n  a = {\n    b = true;\n    c.b = true;\n  };\n}"
+    );
 }
