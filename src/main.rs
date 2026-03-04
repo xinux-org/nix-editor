@@ -1,7 +1,7 @@
 use clap::{self, ArgGroup, Parser};
 use nix_editor::{write, write::addtoarr, write::write};
 use owo_colors::*;
-use std::{ fs, io::Write};
+use std::{fs, io::Write};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -146,7 +146,12 @@ fn main() {
     };
 
     match args {
-        Args { arr, attribute, ref file, .. } if arr.is_some() => {
+        Args {
+            arr,
+            attribute,
+            ref file,
+            ..
+        } if arr.is_some() => {
             out = match addtoarr(&f, &attribute, vec![arr.unwrap()]) {
                 Ok(x) => x,
                 Err(e) => {
@@ -156,7 +161,12 @@ fn main() {
             }
         }
 
-        Args { val, attribute, ref file, .. } if val.is_some() => {
+        Args {
+            val,
+            attribute,
+            ref file,
+            ..
+        } if val.is_some() => {
             out = match write(&f, &attribute, &val.unwrap()) {
                 Ok(x) => x,
                 Err(e) => {
@@ -166,7 +176,12 @@ fn main() {
             };
         }
 
-        Args { deref, attribute, ref file, .. } if deref => {
+        Args {
+            deref,
+            attribute,
+            ref file,
+            ..
+        } if deref => {
             out = match write::deref(&f, &attribute) {
                 Ok(x) => x,
                 Err(e) => {
