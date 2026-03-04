@@ -52,9 +52,7 @@ pub fn write(f: &str, query: &str, val: &str) -> Result<String, WriteError> {
                         addvalue(&configbase, query, val)
                     }
                 }
-                None => {
-                    addvalue(&configbase, query, val)
-                }
+                None => addvalue(&configbase, query, val),
             }
         }
     };
@@ -142,7 +140,7 @@ fn findattrset(
                                 None => {
                                     return None;
                                 }
-                            }
+                            },
                         }
                     }
                 }

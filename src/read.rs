@@ -21,12 +21,10 @@ pub fn readvalue(f: &str, query: &str) -> Result<String, ReadError> {
         }
     };
     let outnode = match findattr(&configbase, query) {
-        Some(x) => {
-            match findvalue(&x) {
-                Some(y) => y.to_string(),
-                None => return Err(ReadError::NoAttr),
-            }
-        }
+        Some(x) => match findvalue(&x) {
+            Some(y) => y.to_string(),
+            None => return Err(ReadError::NoAttr),
+        },
         None => return Err(ReadError::NoAttr),
     };
     Ok(outnode.trim().to_string())
