@@ -31,7 +31,7 @@
         defaultApp = apps.${name};
 
         checks = self.packages.${system};
-        hydraJobs = self.packages.${system};
+        hydraJobs = self.packages.x86_64-linux;
 
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
